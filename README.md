@@ -1,0 +1,163 @@
+```
+openapi: 3.0.3
+info:
+  title: Notification System API
+  description: Manages user notification options and sends notifications.
+  version: 1.0.0
+paths:
+  /preferences:
+    get:
+      summary: Gets the user notification preferences to allow the user to review their values.
+      description: Retrieves the user’s notification preferences for review.
+      parameters:
+        - name: verification_hash
+          in: query
+          required: true
+          description: Hash used for verifying the authenticity of the request.
+          schema:
+            type: string
+      requestBody:
+        description: User identification required to retrieve preferences.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username for which to retrieve preferences.
+              required:
+                - username
+            example:
+              username: 'johndoe'
+      responses:
+        '200':
+          description: User notification preferences successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notification_system:
+                    type: string
+                    enum: ['web', 'email', 'app']
+                    description: The preferred notification method of the user.
+              example:
+                notification_system: 'email'
+        '400':
+          description: Bad Request - Missing or invalid verification hash or username.
+        '500':
+          description: Internal Server Error
+    put:
+      summary: Updates the user notification preferences.
+      description: Modifies the user’s notification preferences with the provided values.
+      parameters:
+        - name: verification_hash
+          in: query
+          required: true
+          description: Hash used for verifying the authenticity of the request.
+          schema:
+            type: string
+      requestBody:
+        description: User identification and notification preferences to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username for which to update preferences.
+                notification_system:
+                  type: string
+                  enum: ['web', 'email', 'app']
+                  description: The preferred notification method.
+              required:
+                - username
+                - notification_system
+            example:
+              username: 'johndoe'
+              notification_system: 'email'
+      responses:
+        '200':
+          description: User notification preferences successfully updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Notification preferences updated successfully."
+        '400':
+          description: Bad Request - Missing or invalid verification hash or invalid input.
+        '500':
+          description: Internal Server Error
+  /new-event:
+    post:
+      summary: Creates a new event with the specified type.
+      description: Allows the creation of a new event by specifying the event type and event name and optionally the winner or agent.
+      parameters:
+        - name: verification_hash
+          in: query
+          required: true
+          description: Hash used for verifying the authenticity of the request.
+          schema:
+            type: string
+      requestBody:
+        description: Details of the event to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_name:
+                  type: string
+                  description: The name of the event following the format 'fighter_1_name vs fighter_2_name'.
+                  example: 'John Doe vs Jane Doe'
+                event_type:
+                  type: string
+                  enum: ['major-piece-captured', 'check', 'check-mate', 'power-punch-landed', 'ko', 'tko']
+                  description: The type of the event being created.
+                winner:
+                  type: string
+                  description: The name of the winner. Required for events 'ko', 'tko', and 'check-mate'.
+                  example: 'John Doe'
+                agent:
+                  type: string
+                  description: The name of the person performing the action. Required for events 'check' and 'major-piece-captured'.
+                  example: 'Alice Smith'
+              required:
+                - event_type
+              oneOf:
+                - properties:
+                    event_type:
+                      enum: ['ko', 'tko', 'check-mate']
+                    winner:
+                      type: string
+                    event_name:
+                      type: string
+                  required:
+                    - winner
+                    - event_name
+                - properties:
+                    event_type:
+                      enum: ['power-punch-landed', 'check', 'major-piece-captured']
+                    agent:
+                      type: string
+                    event_name:
+                      type: string
+                  required:
+                    - agent
+                    - event_name
+      responses:
+        '204':
+          description: Event successfully created, no content to return.
+        '400':
+          description: Bad Request - Missing or invalid verification hash, invalid input or missing properties.
+        '500':
+          description: Internal Server Error
+```
