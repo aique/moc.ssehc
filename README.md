@@ -5,32 +5,23 @@ info:
   description: Manages user notification options and sends notifications.
   version: 1.0.0
 paths:
-  /preferences:
+  /preferences/{username}:
     get:
       summary: Gets the user notification preferences to allow the user to review their values.
       description: Retrieves the user’s notification preferences for review.
       parameters:
+        - name: username
+          in: path
+          required: true
+          description: The username for which to retrieve preferences.
+          schema:
+            type: string
         - name: verification_hash
           in: query
           required: true
           description: Hash used for verifying the authenticity of the request.
           schema:
             type: string
-      requestBody:
-        description: User identification required to retrieve preferences.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                  description: The username for which to retrieve preferences.
-              required:
-                - username
-            example:
-              username: 'johndoe'
       responses:
         '200':
           description: User notification preferences successfully retrieved.
@@ -53,6 +44,12 @@ paths:
       summary: Updates the user notification preferences.
       description: Modifies the user’s notification preferences with the provided values.
       parameters:
+        - name: username
+          in: path
+          required: true
+          description: The username for which to update preferences.
+          schema:
+            type: string
         - name: verification_hash
           in: query
           required: true
@@ -60,25 +57,20 @@ paths:
           schema:
             type: string
       requestBody:
-        description: User identification and notification preferences to update.
+        description: Notification preferences to update.
         required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                username:
-                  type: string
-                  description: The username for which to update preferences.
                 notification_system:
                   type: string
                   enum: ['web', 'email', 'app']
                   description: The preferred notification method.
               required:
-                - username
                 - notification_system
             example:
-              username: 'johndoe'
               notification_system: 'email'
       responses:
         '200':
